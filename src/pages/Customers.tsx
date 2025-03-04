@@ -1,14 +1,42 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "../components/ui/button"
 import { Card } from "../components/ui/card"
 import { Plus } from "lucide-react"
+import { customerService } from "../services/api"
+import type { Customer } from "../lib/types"
 
 export function Customers() {
-  const customers = [
-    { id: "1", name: "John Doe", email: "john@example.com" },
-    { id: "2", name: "Jane Smith", email: "jane@example.com" },
-    { id: "3", name: "Bob Wilson", email: "bob@example.com" },
-  ]
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const response = await customerService.getAll()
+        
+        setCustomers(response.data)
+      } catch (err) {
+        setError("Failed to fetch customers")
+        console.error("Error fetching customers:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCustomers()
+  }, [])
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Loading...</div>
+  }
+
+  if (error) {
+    return <div className="text-red-500 p-4">{error}</div>
+  }
 
   return (
     <div className="space-y-6">
@@ -27,6 +55,7 @@ export function Customers() {
           <table className="w-full">
             <thead>
               <tr className="border-b">
+                <th className="text-left p-4">ID</th>
                 <th className="text-left p-4">Name</th>
                 <th className="text-left p-4">Email</th>
                 <th className="text-left p-4">Actions</th>
@@ -35,6 +64,7 @@ export function Customers() {
             <tbody>
               {customers.map((customer) => (
                 <tr key={customer.id} className="border-b">
+                  <td className="p-4">{customer.id}</td>
                   <td className="p-4">{customer.name}</td>
                   <td className="p-4">{customer.email}</td>
                   <td className="p-4">

@@ -8,19 +8,32 @@ import { Button } from "../components/ui/button"
 import { Card } from "../components/ui/card"
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
+import { customerService } from "../services/api"
+import type { CreateCustomerDto } from "../lib/types"
 
 export function NewCustomer() {
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateCustomerDto>({
     name: "",
     email: "",
   })
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement API call to create customer
-    console.log("Creating customer:", formData)
-    navigate("/customers")
+    setError(null)
+    setLoading(true)
+
+    try {
+      await customerService.create(formData)
+      navigate("/customers")
+    } catch (err) {
+      setError("Failed to create customer")
+      console.error("Error creating customer:", err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -30,6 +43,7 @@ export function NewCustomer() {
           <h2 className="text-lg font-semibold">New Customer</h2>
           <p className="text-sm text-muted-foreground">Add a new customer to the system</p>
         </div>
+        {error && <div className="mb-4 p-4 text-sm text-red-500 bg-red-50 rounded-md">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
@@ -50,7 +64,9 @@ export function NewCustomer() {
               required
             />
           </div>
-          <Button type="submit">Create Customer</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Creating..." : "Create Customer"}
+          </Button>
         </form>
       </Card>
     </div>

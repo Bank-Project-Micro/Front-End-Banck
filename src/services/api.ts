@@ -1,19 +1,21 @@
 import axios from "axios"
-import type { Customer, Account } from "../lib/types"
+import type { Customer, Account, CreateCustomerDto, CreateAccountDto } from "../lib/types"
+
+const API_URL = "http://localhost:8989/api"
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8080",
+  baseURL: API_URL,
 })
 
 export const customerService = {
   getAll: () => api.get<Customer[]>("/customers"),
-  getById: (id: string) => api.get<Customer>(`/customers/${id}`),
-  create: (data: Omit<Customer, "id">) => api.post<Customer>("/customers", data),
+  getById: (id: number) => api.get<Customer>(`/customers/${id}`),
+  create: (data: CreateCustomerDto) => api.post<Customer>("/customers", data),
 }
 
 export const accountService = {
-  getAll: () => api.get<Account[]>("/accounts"),
-  getById: (id: string) => api.get<Account>(`/accounts/${id}`),
-  create: (data: Omit<Account, "id">) => api.post<Account>("/accounts", data),
+  getAll: (customerId: number) => api.get<Account[]>(`/accounts/customer/${customerId}`),
+  getById: (id: number) => api.get<Account>(`/accounts/${id}`),
+  create: (data: CreateAccountDto) => api.post<Account>("/accounts", data),
 }
 
